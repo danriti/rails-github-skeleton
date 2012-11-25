@@ -10,7 +10,7 @@
 
 <div id="user_nav">
   <% if current_user %>
-    <img src=<%= current_user.image %> />
+    <img src=<%= current_user.image_url %> />
     Signed in as <%= current_user.name %>!
     <%= link_to "Sign out", signout_path %>
   <% else %>

@@ -1,5 +1,5 @@
 RailsGithubSkeleton::Application.routes.draw do
-  root :to => 'articles#index'
+  root :to => 'home#index'
   match "/auth/:provider/callback" => "sessions#create"
   match 'auth/failure', to: redirect('/')
   match 'signout', to: 'sessions#destroy', as: 'signout'
