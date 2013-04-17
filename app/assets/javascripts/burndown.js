@@ -1,20 +1,49 @@
 $(function() {
 
+    // Magic underscore settings to allow underscore templates to play
+    // nicely with Rails ERB templates!
     _.templateSettings = {
         interpolate: /\{\{\=(.+?)\}\}/g,
         evaluate: /\{\{(.+?)\}\}/g
     };
 
     // Models
+    var Session = Backbone.Model.extend({
+        initialize: function() {
+            var self = this;
+            $.getJSON('/sessions/get', function(response) {
+                var data = response.data;
+                var token = null;
+                if (response.status == "ok" && data.token) {
+                    console.log('session created!');
+                    token = data.token;
+                }
+                self.set('token', token);
+            });
+        }
+    });
+    var session = new Session();
+
     var Repository = Backbone.Model.extend({
         defaults: {
             'owner': 'tracelytics',
             'repo': 'tracelons'
         }
     });
-    var Milestone = Backbone.Model.extend();
+    var repository = new Repository();
+
+    var Milestone = Backbone.Model.extend({
+        getOpenIssues: function() {
+            var url = ['https://api.github.com',
+                       '/repos/'+this.owner+'/'+this.repo+'/milestones',
+                       '?access_token=',
+                       this.token].join('');
+            $.getJSON();
+        }
+    });
+
     var Milestones = Backbone.Collection.extend({
-        model: Repository,
+        model: Milestone,
         url: function() {
             var url = ['https://api.github.com',
                        '/repos/'+this.owner+'/'+this.repo+'/milestones',
@@ -35,23 +64,6 @@ $(function() {
         repo: null
     });
 
-    var Session = Backbone.Model.extend({
-        initialize: function() {
-            var self = this;
-            $.getJSON('/sessions/get', function(response) {
-                var data = response.data;
-                var token = null;
-                if (response.status == "ok" && data.token) {
-                    console.log('session created!');
-                    token = data.token;
-                }
-                self.set('token', token);
-            });
-        }
-    });
-
-    var session = new Session();
-    var repo = new Repository();
     var milestones = new Milestones();
 
     // dependencies
