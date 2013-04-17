@@ -127,6 +127,9 @@ $(function() {
             _.bindAll(this, 'render', 'loadMilestone');
             var self = this;
 
+            this.openIssues = new OpenIssues();
+            this.closedIssues = new ClosedIssues();
+
             // dependencies
         },
         render: function(tmpl, data) {
@@ -137,21 +140,33 @@ $(function() {
         loadMilestone: function(id) {
             var self = this;
 
-            // Load the loading template.
+            // Render the loading template.
             self.render("#tmpl_loading", {});
 
             var milestone = milestones.at(id);
-            var openIssues = new OpenIssues();
-            openIssues.milestoneId = milestone.get('number');
-            openIssues.fetch({
+            console.log('milestone: ', milestone);
+            self.openIssues.milestoneId = milestone.get('number');
+            self.closedIssues.milestoneId = milestone.get('number');
+
+            // Render the milestone template.
+            self.render('#tmpl_milestone', {milestone: milestone});
+
+            self.openIssues.fetch({
                 success: function(issues) {
-                    console.log('issues: ', issues);
-                    var data = {
-                        milestone: milestone,
+                    data = {
                         issues: issues.models
                     };
-                    // Render the milestone!
-                    self.render('#tmpl_milestone', data);
+                    var template = _.template($('#tmpl_issues').html(), data);
+                    $('.open', self.el).html(template);
+                }
+            });
+            self.closedIssues.fetch({
+                success: function(issues) {
+                    data = {
+                        issues: issues.models
+                    };
+                    var template = _.template($('#tmpl_issues').html(), data);
+                    $('.closed', self.el).html(template);
                 }
             });
         }

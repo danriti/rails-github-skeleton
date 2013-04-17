@@ -27,14 +27,18 @@
   <h2>Milestone</h2>
   <div>{{=milestone.get('title')}}</div>
   <div>{{=milestone.get('number')}}</div>
-  <h3>Issues</h3>
-  <div>
-    <ul>
-    {{ _.each(issues, function (issue, i) { }}
-      <li>{{=issue.get('title')}}</li>
-    {{ }); }}
-    </ul>
-  </div>
+  <h3>Open Issues [{{=milestone.get('open_issues')}}]</h3>
+  <div class="open"></div>
+  <h3>Closed Issues [{{=milestone.get('closed_issues')}}]</h3>
+  <div class="closed"></div>
+</script>
+
+<script type="text/template" id="tmpl_issues">
+  <ul>
+  {{ _.each(issues, function (issue, i) { }}
+    <li>{{=issue.get('title')}}</li>
+  {{ }); }}
+  </ul>
 </script>
 
 <script type="text/template" id="tmpl_loading">
