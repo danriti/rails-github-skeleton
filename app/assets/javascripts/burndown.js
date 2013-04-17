@@ -9,6 +9,10 @@ $(function() {
 
     // Models
     var Session = Backbone.Model.extend({
+        defaults: {
+            'owner': '',
+            'repo': ''
+        },
         initialize: function() {
             var self = this;
             $.getJSON('/sessions/get', function(response) {
@@ -24,52 +28,54 @@ $(function() {
     });
     var session = new Session();
 
-    var Repository = Backbone.Model.extend({
-        defaults: {
-            'owner': 'tracelytics',
-            'repo': 'tracelons'
+    var Issue = Backbone.Model.extend();
+    var Issues = Backbone.Collection.extend({
+        model: Issue,
+        url: function() {
+            var token = session.get('token');
+            var owner = session.get('owner');
+            var repo = session.get('repo');
+
+            var url = ['https://api.github.com',
+                       '/repos/'+owner+'/'+repo+'/issues?',
+                       'access_token='+token,
+                       ''].join('');
+            return url;
+        },
+        parse: function(response) {
+            return response;
         }
     });
-    var repository = new Repository();
 
     var Milestone = Backbone.Model.extend({
         getOpenIssues: function() {
-            var url = ['https://api.github.com',
-                       '/repos/'+this.owner+'/'+this.repo+'/milestones',
-                       '?access_token=',
-                       this.token].join('');
-            $.getJSON();
+            return 0;
         }
     });
 
     var Milestones = Backbone.Collection.extend({
         model: Milestone,
         url: function() {
+            var token = session.get('token');
+            var owner = session.get('owner');
+            var repo = session.get('repo');
+
             var url = ['https://api.github.com',
-                       '/repos/'+this.owner+'/'+this.repo+'/milestones',
+                       '/repos/'+owner+'/'+repo+'/milestones',
                        '?access_token=',
-                       this.token].join('');
+                       token].join('');
             return url;
         },
         parse: function(response) {
             console.log('parsing...');
             return response;
-        },
-        setRepo: function(owner, repo) {
-            this.owner = owner;
-            this.repo = repo;
-        },
-        token: 0,
-        owner: null,
-        repo: null
+        }
     });
-
     var milestones = new Milestones();
 
-    // dependencies
+    // Dependencies
     session.on('change:token', function(model, value) {
         console.log('token: ', value);
-        milestones.token = value;
     });
 
     // Views
@@ -99,7 +105,9 @@ $(function() {
             var owner = parts[0] || null;
             var repoName = parts[1] || null;
 
-            milestones.setRepo(owner, repoName);
+            // Update session model.
+            session.set('owner', owner);
+            session.set('repo', repoName);
 
             // Fetch the milestones.
             milestones.fetch({
