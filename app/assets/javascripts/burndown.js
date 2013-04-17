@@ -82,13 +82,11 @@ $(function() {
     var RepoView = Backbone.View.extend({
         el: '.le-hook',
         events: {
-            'click button#get_repo_milestones': 'getRepoMilestones'
+            'click button#fetch': 'getRepoMilestones'
         },
         initialize: function() {
             _.bindAll(this, 'render', 'getRepoMilestones');
             var self = this;
-
-            // dependencies
         },
         render: function(milestones) {
             var template = _.template($("#tmpl_repo").html(),
@@ -112,7 +110,6 @@ $(function() {
             // Fetch the milestones.
             milestones.fetch({
                 success: function(milestones) {
-                    console.log('milestones: ', milestones);
                     self.render(milestones);
                 }
             });
@@ -121,9 +118,6 @@ $(function() {
 
     var MilestoneView = Backbone.View.extend({
         el: '.le-hook',
-        //events: {
-        //    'click button#get_repo_milestones': 'getRepoMilestones'
-        //},
         initialize: function() {
             _.bindAll(this, 'render');
             var self = this;
@@ -131,8 +125,10 @@ $(function() {
             // dependencies
         },
         render: function(id) {
+            var milestone = milestones.at(id);
+            console.log('milestone: ', milestone);
             var template = _.template($("#tmpl_milestone").html(),
-                                      {milestone: milestones.at(id)});
+                                      {milestone: milestone});
             this.$el.html( template );
             return this;
         }
