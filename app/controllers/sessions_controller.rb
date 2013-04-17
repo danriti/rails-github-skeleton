@@ -8,6 +8,12 @@ class SessionsController < ApplicationController
     redirect_to root_url, notice: "Signed in!"
   end
 
+  def get
+    token = session[:user_token]
+    return render :json => {'status' => (token ? 'ok' : 'error'),
+                            'data' => (token ? token : nil)}
+  end
+
   def destroy
     session[:user_id] = nil
     session[:user_token] = nil
