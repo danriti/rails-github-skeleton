@@ -133,7 +133,6 @@ $(function() {
 
     router.on('route:home', function() {
         console.log('Load the home page!');
-        var milestones = {models: []};
         repoView.render(milestones);
     });
 
