@@ -29,7 +29,7 @@ $(function() {
     var session = new Session();
 
     var Issue = Backbone.Model.extend();
-    var Issues = Backbone.Collection.extend({
+    var IssuesBase = Backbone.Collection.extend({
         model: Issue,
         url: function() {
             var token = session.get('token');
@@ -50,24 +50,14 @@ $(function() {
         state: 'open',
         milestoneId: 0
     });
-
-    var Milestone = Backbone.Model.extend({
-        initialize: function() {
-            this.openIssues = new Issues();
-            this.openIssues.state = 'open';
-            this.closedIssues = new Issues();
-            this.closedIssues.state = 'closed';
-        },
-        getOpenIssues: function() {
-            this.openIssues.milestoneId = this.get('number');
-            this.openIssues.fetch({
-                success: function(issues) {
-                    console.log('issues: ', issues);
-                }
-            });
-        }
+    var OpenIssues = IssuesBase.extend({
+        state: 'open'
+    });
+    var ClosedIssues = IssuesBase.extend({
+        state: 'closed'
     });
 
+    var Milestone = Backbone.Model.extend();
     var Milestones = Backbone.Collection.extend({
         model: Milestone,
         url: function() {
@@ -134,19 +124,36 @@ $(function() {
     var MilestoneView = Backbone.View.extend({
         el: '.le-hook',
         initialize: function() {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'loadMilestone');
             var self = this;
 
             // dependencies
         },
-        render: function(id) {
-            var milestone = milestones.at(id);
-            console.log('milestone: ', milestone);
-            milestone.getOpenIssues();
-            var template = _.template($("#tmpl_milestone").html(),
-                                      {milestone: milestone});
+        render: function(tmpl, data) {
+            var template = _.template($(tmpl).html(), data);
             this.$el.html( template );
             return this;
+        },
+        loadMilestone: function(id) {
+            var self = this;
+
+            // Load the loading template.
+            self.render("#tmpl_loading", {});
+
+            var milestone = milestones.at(id);
+            var openIssues = new OpenIssues();
+            openIssues.milestoneId = milestone.get('number');
+            openIssues.fetch({
+                success: function(issues) {
+                    console.log('issues: ', issues);
+                    var data = {
+                        milestone: milestone,
+                        issues: issues.models
+                    };
+                    // Render the milestone!
+                    self.render('#tmpl_milestone', data);
+                }
+            });
         }
     });
 
@@ -170,7 +177,7 @@ $(function() {
 
     router.on('route:milestone', function(id) {
         console.log('Load the milestone page!');
-        milestoneView.render(id);
+        milestoneView.loadMilestone(id);
     });
 
     // Let's get this party started!

@@ -16,7 +16,7 @@
   <div>
     <ul class="milestones">
     {{ _.each(milestones, function (milestone, i) { }}
-        <li><a href="#milestone/{{=i}}">{{=milestone.get('title')}}</a></li>
+      <li><a href="#milestone/{{=i}}">{{=milestone.get('title')}}</a></li>
     {{ }); }}
     </ul>
   </div>
@@ -27,4 +27,16 @@
   <h2>Milestone</h2>
   <div>{{=milestone.get('title')}}</div>
   <div>{{=milestone.get('number')}}</div>
+  <h3>Issues</h3>
+  <div>
+    <ul>
+    {{ _.each(issues, function (issue, i) { }}
+      <li>{{=issue.get('title')}}</li>
+    {{ }); }}
+    </ul>
+  </div>
+</script>
+
+<script type="text/template" id="tmpl_loading">
+  <div>Loading...</div>
 </script>
