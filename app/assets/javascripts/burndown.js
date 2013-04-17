@@ -37,19 +37,34 @@ $(function() {
             var repo = session.get('repo');
 
             var url = ['https://api.github.com',
-                       '/repos/'+owner+'/'+repo+'/issues?',
-                       'access_token='+token,
+                       '/repos/'+owner+'/'+repo+'/issues',
+                       '?access_token='+token,
+                       '&state='+this.state,
+                       '&milestone='+this.milestoneId,
                        ''].join('');
             return url;
         },
         parse: function(response) {
             return response;
-        }
+        },
+        state: 'open',
+        milestoneId: 0
     });
 
     var Milestone = Backbone.Model.extend({
+        initialize: function() {
+            this.openIssues = new Issues();
+            this.openIssues.state = 'open';
+            this.closedIssues = new Issues();
+            this.closedIssues.state = 'closed';
+        },
         getOpenIssues: function() {
-            return 0;
+            this.openIssues.milestoneId = this.get('number');
+            this.openIssues.fetch({
+                success: function(issues) {
+                    console.log('issues: ', issues);
+                }
+            });
         }
     });
 
@@ -127,6 +142,7 @@ $(function() {
         render: function(id) {
             var milestone = milestones.at(id);
             console.log('milestone: ', milestone);
+            milestone.getOpenIssues();
             var template = _.template($("#tmpl_milestone").html(),
                                       {milestone: milestone});
             this.$el.html( template );
