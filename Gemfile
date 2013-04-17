@@ -22,6 +22,7 @@ end
 
 gem 'jquery-rails'
 gem 'underscore-rails'
+gem 'twitter-bootstrap-rails', :git => 'git://github.com/seyhunak/twitter-bootstrap-rails.git'
 
 gem 'omniauth-github', :git => 'git://github.com/intridea/omniauth-github.git'
 
