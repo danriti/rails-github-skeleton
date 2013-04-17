@@ -1,2 +1,25 @@
 <h1>Rails Github Skeleton</h1>
 <p>Aliquam pellentesque est eget nisl vehicula a iaculis lectus aliquet. In hac habitasse platea dictumst. Duis id sapien elit, at sodales nisi. Aliquam erat volutpat. Duis suscipit feugiat enim nec fringilla. Suspendisse in risus eu dui bibendum vehicula. Aenean vulputate tristique tincidunt. Sed consequat turpis nec mi feugiat ultricies. Morbi lobortis, nisl sed pellentesque bibendum, elit mi hendrerit sapien, malesuada dignissim sem libero non diam. Nullam a nunc eu ligula suscipit egestas.</p>
+
+<% if current_user %>
+  <div class="le-hook"></div>
+<% end %>
+
+<!-- Templates -->
+<script type="text/template" id="tmpl_repo">
+  <h1>Repos</h1>
+  <input type="text" class="input-medium search-query">
+  <button id="get_repo_milestones" placeholder="tracelytics/tracelons" class="btn">Search</button>
+  <hr>
+  <ul class="milestones">
+  {{ _.each(milestones, function (milestone, i) { }}
+      <li><a href="#milestone/{{=i}}">{{=milestone.get('title')}}</a></li>
+  {{ }); }}
+  </ul>
+</script>
+
+<script type="text/template" id="tmpl_milestone">
+  <a href="#">Back</a>
+  <h1>Milestone</h1>
+  <div>{{=milestone.get('title')}}</div>
+</script>
