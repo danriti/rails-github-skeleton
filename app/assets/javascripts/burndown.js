@@ -155,21 +155,21 @@ $(function() {
             if (self.openIssues.length > 0 && self.closedIssues.length > 0) {
                 // Clear the chart of any previous elements.
                 $('#chart').empty();
+                $('#legend').empty();
+
+                var totalIssueCount = self.openIssues.length + self.closedIssues.length;
 
                 // Add ideal velocity line.
                 var start = self.milestone.get('created_at');
                 var end = self.milestone.get('due_on') || new Date().toISOString();
-                var totalIssueCount = self.openIssues.length + self.closedIssues.length;
-
-                var startDate = new Date(start).getTime();
-                var endDate = new Date(end).getTime();
+                var startDate = new Date(start).getTime() / 1000;
+                var endDate = new Date(end).getTime() / 1000;
 
                 var ideal = [
-                    {x: startDate / 1000,
-                     y: totalIssueCount},
-                    {x: endDate / 1000,
-                     y: 0}
+                    {x: startDate, y: totalIssueCount},
+                    {x: endDate,   y: 0}
                 ];
+
                 // Add actual velocity line.
                 var closedCount = totalIssueCount;
 
@@ -202,6 +202,11 @@ $(function() {
                     graph: graph,
                     element: document.getElementById('legend')
 
+                } );
+
+                var highlighter = new Rickshaw.Graph.Behavior.Series.Highlight( {
+                    graph: graph,
+                    legend: legend
                 } );
 
                 var time = new Rickshaw.Fixtures.Time();
