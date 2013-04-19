@@ -31,6 +31,9 @@ $(function() {
     var Issue = Backbone.Model.extend();
     var IssuesBase = Backbone.Collection.extend({
         model: Issue,
+        comparator: function(collection) {
+            return collection.get('closed_at');
+        },
         url: function() {
             var token = session.get('token');
             var owner = session.get('owner');
@@ -127,6 +130,7 @@ $(function() {
             _.bindAll(this, 'render', 'loadMilestone', 'renderChart');
             var self = this;
 
+            self.milestone = new Milestone();
             self.openIssues = new OpenIssues();
             self.closedIssues = new ClosedIssues();
 
@@ -143,8 +147,100 @@ $(function() {
             var self = this;
 
             if (self.openIssues.length > 0 && self.closedIssues.length > 0) {
-                console.log('open: ', this.openIssues.models.length);
-                console.log('closed: ', this.closedIssues.models.length);
+                // Clear the chart of any previous elements.
+                $('#chart').empty();
+
+                // Initialize!
+                var margin = {top: 20, right: 20, bottom: 30, left: 50},
+                    width = 960 - margin.left - margin.right,
+                    height = 500 - margin.top - margin.bottom;
+
+                var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%SZ").parse;
+
+                var x = d3.time.scale()
+                    .range([0, width]);
+
+                var y = d3.scale.linear()
+                    .range([height, 0]);
+
+                var xAxis = d3.svg.axis()
+                    .scale(x)
+                    //.tickFormat(d3.time.format("%m/%d/%Y"))
+                    .tickFormat(d3.time.format("%b %d"))
+                    .orient("bottom");
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left");
+
+                var svg = d3.select("#chart").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                // Add ideal velocity line.
+                var line = d3.svg.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.count); });
+
+                var start = self.milestone.get('created_at');
+                var end = self.milestone.get('due_on') || new Date().toISOString();
+                var totalIssueCount = self.openIssues.length + self.closedIssues.length;
+
+                var startDate = new Date(start);
+                var endDate = new Date(end);
+
+                var days = (endDate.getTime() - startDate.getTime()) / 86400000;
+
+                var data = [
+                    {date: parseDate(start),
+                     count: totalIssueCount},
+                    {date: parseDate(end),
+                     count: 0}
+                ];
+
+                x.domain(d3.extent(data, function(d) { return d.date; }));
+                y.domain(d3.extent(data, function(d) { return d.count; }));
+
+                // Add actual velocity line.
+                var line2 = d3.svg.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.count); });
+
+                var closedCount = totalIssueCount;
+
+                var data2 = _.map(self.closedIssues.models, function(issue) {
+                    return {
+                        date: parseDate(issue.get('closed_at')),
+                        count: --closedCount
+                    };
+                });
+
+                svg.append("g")
+                  .attr("class", "x axis")
+                  .attr("transform", "translate(0," + height + ")")
+                  .call(xAxis);
+
+                svg.append("g")
+                  .attr("class", "y axis")
+                  .call(yAxis)
+                  .append("text")
+                  .attr("transform", "rotate(-90)")
+                  .attr("y", 6)
+                  .attr("dy", ".71em")
+                  .style("text-anchor", "end")
+                  .text("Issue Count (" + totalIssueCount + " total)");
+
+                svg.append("path")
+                  .datum(data)
+                  .attr("class", "ideal")
+                  .attr("d", line);
+
+                svg.append("path")
+                  .datum(data2)
+                  .attr("class", "line")
+                  .attr("d", line2);
             }
         },
         loadMilestone: function(id) {
@@ -153,13 +249,14 @@ $(function() {
             // Render the loading template.
             self.render("#tmpl_loading", {});
 
-            var milestone = milestones.at(id);
-            console.log('milestone: ', milestone);
-            self.openIssues.milestoneId = milestone.get('number');
-            self.closedIssues.milestoneId = milestone.get('number');
+            self.milestone = milestones.at(id);
+            console.log('milestone: ', self.milestone);
+
+            self.openIssues.milestoneId = self.milestone.get('number');
+            self.closedIssues.milestoneId = self.milestone.get('number');
 
             // Render the milestone template.
-            self.render('#tmpl_milestone', {milestone: milestone});
+            self.render('#tmpl_milestone', {milestone: self.milestone});
 
             self.openIssues.fetch({
                 success: function(issues) {
