@@ -124,18 +124,28 @@ $(function() {
     var MilestoneView = Backbone.View.extend({
         el: '.le-hook',
         initialize: function() {
-            _.bindAll(this, 'render', 'loadMilestone');
+            _.bindAll(this, 'render', 'loadMilestone', 'renderChart');
             var self = this;
 
-            this.openIssues = new OpenIssues();
-            this.closedIssues = new ClosedIssues();
+            self.openIssues = new OpenIssues();
+            self.closedIssues = new ClosedIssues();
 
             // dependencies
+            self.openIssues.on('sync', self.renderChart);
+            self.closedIssues.on('sync', self.renderChart);
         },
         render: function(tmpl, data) {
             var template = _.template($(tmpl).html(), data);
             this.$el.html( template );
             return this;
+        },
+        renderChart: function() {
+            var self = this;
+
+            if (self.openIssues.length > 0 && self.closedIssues.length > 0) {
+                console.log('open: ', this.openIssues.models.length);
+                console.log('closed: ', this.closedIssues.models.length);
+            }
         },
         loadMilestone: function(id) {
             var self = this;
