@@ -14,5 +14,6 @@
 //= require jquery_ujs
 //= require underscore
 //= require backbone
+//= require d3
 //= require twitter/bootstrap
 //= require_tree .
