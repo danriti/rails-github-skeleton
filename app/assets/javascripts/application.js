@@ -14,6 +14,7 @@
 //= require jquery_ujs
 //= require underscore
 //= require backbone
-//= require d3
+//= require d3.v2
+//= require rickshaw
 //= require twitter/bootstrap
 //= require_tree .
